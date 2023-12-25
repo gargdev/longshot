@@ -69,4 +69,5 @@ The frontend periodically fetches chat history to keep it updated.
 ## Conclusion
 This chat application seamlessly integrates a React frontend with an Express backend, providing a user-friendly interface for interacting with the Longshot.ai API. The modular structure and use of local storage ensure data persistence and a smooth user experience. Error handling and periodic updates contribute to the application's robustness and reliability.
 
+Live Link: https://longshottask.netlify.app/
 ---
