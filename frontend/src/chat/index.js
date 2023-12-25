@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Chat = () => {
   const examples = [
@@ -12,9 +12,12 @@ const Chat = () => {
     "How To Use Tailwind CSS with Angular",
   ];
 
-  // Move the useState hook here
+
   const [chat, setChat] = useState([]);
+  const [chatHistory, setChatHistory] = useState([]);
   const [input, setInput] = useState([]);
+
+  console.log(chatHistory, "chatHistory");
 
   const handleSend = async () => {
     if (input.trim()) {
@@ -36,10 +39,7 @@ const Chat = () => {
           const responseData = await response.json();
           const generatedContent = responseData.messages[0].content;
 
-          setChat([
-            ...chat,
-            { role: "assistant", content: generatedContent },
-          ]);
+          setChat([...chat, { role: "assistant", content: generatedContent }]);
         } else {
           console.error("Failed to send message to the backend");
           const errorData = await response.json();
@@ -48,8 +48,63 @@ const Chat = () => {
       } catch (error) {
         console.error("Error sending message to the backend:", error);
       }
+
+      const createTitle = await fetch("http://localhost:8080/api/title", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: input,
+        }),
+      });
+
+      const title = await createTitle.json();
+      setChatHistory([...chatHistory, title]);
     }
   };
+
+  const handleDeleteChatHistory = async (index) => {
+    try {
+      const response = await fetch("http://localhost:8080/api/delete-chat-history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ index }),
+      });
+  
+      if (response.ok) {
+        const updatedChatHistory = [...chatHistory];
+        updatedChatHistory.splice(index, 1);
+        setChatHistory(updatedChatHistory);
+      } else {
+        console.error("Failed to delete chat history");
+      }
+    } catch (error) {
+      console.error("Error deleting chat history:", error);
+    }
+  };
+  
+  const fetchChatHistory = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/chat-history");
+      if (response.ok) {
+        const chatHistoryData = await response.json();
+        setChatHistory(chatHistoryData);
+      } else {
+        console.error("Failed to fetch chat history");
+      }
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+    }
+  };
+  
+  // Fetch chat history when the component mounts
+  useEffect(() => {
+    fetchChatHistory();
+  }, []);
+  
   return (
     <div className="w-screen h-screen bg-[#050509] flex">
       <div className="w-[20%] h-screen bg-[#0c0c15] text-white p-4">
@@ -59,40 +114,12 @@ const Chat = () => {
           </button>
         </div>
         <div className="h-[75%] overflow-scroll shadow-lg hide-scroll-bar mb-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(
-            (item, index) => (
-              <div className="py-3 text-center rounded mt-4 text-lg font-light flex items-center px-8 hover:bg-slate-600 cursor-pointer">
-                <span className="mr-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-message-2"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M8 9h8" />
-                    <path d="M8 13h6" />
-                    <path d="M9 18h-3a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-3l-3 3l-3 -3z" />
-                  </svg>
-                </span>
-                My Chat History
-              </div>
-            )
-          )}
-        </div>
-        <div className="overflow-scroll shadow-lg hide-scroll-bar h-[15%] border-t">
-          {[1, 2, 3].map((item, index) => (
+          {chatHistory.map((item, index) => (
             <div className="py-3 text-center rounded mt-4 text-lg font-light flex items-center px-8 hover:bg-slate-600 cursor-pointer">
               <span className="mr-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="icon icon-tabler icon-tabler-settings-code"
+                  class="icon icon-tabler icon-tabler-message-2"
                   width="24"
                   height="24"
                   viewBox="0 0 24 24"
@@ -103,13 +130,18 @@ const Chat = () => {
                   stroke-linejoin="round"
                 >
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M11.482 20.924a1.666 1.666 0 0 1 -1.157 -1.241a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.312 .318 1.644 1.794 .995 2.697" />
-                  <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                  <path d="M20 21l2 -2l-2 -2" />
-                  <path d="M17 17l-2 2l2 2" />
+                  <path d="M8 9h8" />
+                  <path d="M8 13h6" />
+                  <path d="M9 18h-3a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-3l-3 3l-3 -3z" />
                 </svg>
               </span>
-              Settings
+              <span className="text-left">{item.title}</span>
+              <button
+                className="ml-auto text-white"
+                onClick={() => handleDeleteChatHistory(index)}
+              >
+                Delete
+              </button>
             </div>
           ))}
         </div>
@@ -168,7 +200,12 @@ const Chat = () => {
                     </svg>
                   )}
                 </span>
-                <div className="leading-loose">{item.content}</div>
+                <div
+                  className="leading-loose"
+                  style={{ whiteSpace: "break-spaces" }}
+                >
+                  {item.content}
+                </div>
               </div>
             ))}
           </div>
@@ -177,7 +214,10 @@ const Chat = () => {
             <div className="text-4xl font-bold mb-8">APP GPT</div>
             <div className="flex flex-wrap justify-around max-w-[900px]">
               {examples.map((item, index) => (
-                <div className="text-lg font-light mt-4 p-4 min-w-[400px] border rounded cursor-pointer hover:bg-slate-800" onClick={()=>setInput(item)}>
+                <div
+                  className="text-lg font-light mt-4 p-4 min-w-[400px] border rounded cursor-pointer hover:bg-slate-800"
+                  onClick={() => setInput(item)}
+                >
                   {item}
                 </div>
               ))}
