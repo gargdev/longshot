@@ -12,9 +12,9 @@ const Chat = () => {
     "How To Use Tailwind CSS with Angular",
   ];
 
-
   const [chat, setChat] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
+  const [title, setTitle] = useState([]);
   const [input, setInput] = useState([]);
 
   console.log(chatHistory, "chatHistory");
@@ -48,32 +48,37 @@ const Chat = () => {
       } catch (error) {
         console.error("Error sending message to the backend:", error);
       }
+      if (!title) {
+        const createTitle = await fetch("http://localhost:8080/api/title", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: input,
+          }),
+        });
 
-      const createTitle = await fetch("http://localhost:8080/api/title", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: input,
-        }),
-      });
-
-      const title = await createTitle.json();
-      setChatHistory([...chatHistory, title]);
+        const title = await createTitle.json();
+        setTitle(title?.title);
+        setChatHistory([...chatHistory, title]);
+      }
     }
   };
 
   const handleDeleteChatHistory = async (index) => {
     try {
-      const response = await fetch("http://localhost:8080/api/delete-chat-history", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ index }),
-      });
-  
+      const response = await fetch(
+        "http://localhost:8080/api/delete-chat-history",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ index }),
+        }
+      );
+
       if (response.ok) {
         const updatedChatHistory = [...chatHistory];
         updatedChatHistory.splice(index, 1);
@@ -85,7 +90,7 @@ const Chat = () => {
       console.error("Error deleting chat history:", error);
     }
   };
-  
+
   const fetchChatHistory = async () => {
     try {
       const response = await fetch("http://localhost:8080/api/chat-history");
@@ -99,17 +104,23 @@ const Chat = () => {
       console.error("Error fetching chat history:", error);
     }
   };
-  
+
   // Fetch chat history when the component mounts
   useEffect(() => {
     fetchChatHistory();
   }, []);
-  
+
   return (
     <div className="w-screen h-screen bg-[#050509] flex">
       <div className="w-[20%] h-screen bg-[#0c0c15] text-white p-4">
         <div className="h-5%">
-          <button className="w-full h-[50px] text-white border rounded hover:bg-slate-600">
+          <button
+            className="w-full h-[50px] text-white border rounded hover:bg-slate-600"
+            onClick={() => {
+              setChat([]);
+              setTitle("");
+            }}
+          >
             + New Chat
           </button>
         </div>
@@ -140,7 +151,27 @@ const Chat = () => {
                 className="ml-auto text-white"
                 onClick={() => handleDeleteChatHistory(index)}
               >
-                Delete
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon icon-tabler icon-tabler-trash-off"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M3 3l18 18" />
+                  <path d="M4 7h3m4 0h9" />
+                  <path d="M10 11l0 6" />
+                  <path d="M14 14l0 3" />
+                  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l.077 -.923" />
+                  <path d="M18.384 14.373l.616 -7.373" />
+                  <path d="M9 5v-1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                </svg>
               </button>
             </div>
           ))}
