@@ -242,7 +242,7 @@ const Chat = () => {
           </div>
         ) : (
           <div className="h-[80%] flex text-white flex-col justify-center items-center">
-            <div className="text-4xl font-bold mb-8">APP GPT</div>
+            <div className="text-4xl font-bold mb-8">LONG SHOT</div>
             <div className="flex flex-wrap justify-around max-w-[900px]">
               {examples.map((item, index) => (
                 <div
@@ -289,7 +289,7 @@ const Chat = () => {
               </span>
             </div>
             <small className="text-slate-500 mt-2 text-lg">
-              AI Can generate incorrect information
+              This is A Demo Implementation of LONGSHOT API
             </small>
           </div>
         </div>
