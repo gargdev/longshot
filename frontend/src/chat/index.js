@@ -14,7 +14,7 @@ const Chat = () => {
 
   const [chat, setChat] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
-  const [title, setTitle] = useState([]);
+  // const [title, setTitle] = useState([]);
   const [input, setInput] = useState([]);
 
   console.log(chatHistory, "chatHistory");
@@ -48,21 +48,20 @@ const Chat = () => {
       } catch (error) {
         console.error("Error sending message to the backend:", error);
       }
-      if (!title) {
-        const createTitle = await fetch("http://localhost:8080/api/title", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text: input,
-          }),
-        });
 
-        const title = await createTitle.json();
-        setTitle(title?.title);
-        setChatHistory([...chatHistory, title]);
-      }
+      const createTitle = await fetch("http://localhost:8080/api/title", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: input,
+        }),
+      });
+
+      const title = await createTitle.json();
+      // setTitle(title?.title);
+      setChatHistory([...chatHistory, title]);
     }
   };
 
@@ -118,7 +117,7 @@ const Chat = () => {
             className="w-full h-[50px] text-white border rounded hover:bg-slate-600"
             onClick={() => {
               setChat([]);
-              setTitle("");
+              // setTitle("");
             }}
           >
             + New Chat
